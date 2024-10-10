@@ -1,0 +1,3 @@
+SINKS = ["copepod"]
+
+HOSTS = ["dogs"]
