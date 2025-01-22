@@ -40,7 +40,37 @@ def process_data(model_output):
                 processed_rows.append({
                     "year": data_set["year"],
                     "population": population,
-                    "measure": "Re",
-                    "value": year_pop_stat["Re"],
+                    "measure": "emergence_hosts_copepod",
+                    "value": year_pop_stat["emergence_hosts_copepod"],
+                })
+                processed_rows.append({
+                    "year": data_set["year"],
+                    "population": population,
+                    "measure": "emergences_per_host_copepod",
+                    "value": year_pop_stat["emergences_per_host_copepod"],
+                })
+                processed_rows.append({
+                    "year": data_set["year"],
+                    "population": population,
+                    "measure": "emergence_average_worm_age_copepod",
+                    "value": year_pop_stat["emergence_average_worm_age_copepod"],
+                })
+                processed_rows.append({
+                    "year": data_set["year"],
+                    "population": population,
+                    "measure": "mean_worm_rate",
+                    "value": year_pop_stat["mean_worm_rate"],
+                })
+                processed_rows.append({
+                    "year": data_set["year"],
+                    "population": population,
+                    "measure": "mating_prob",
+                    "value": year_pop_stat["mating_prob"],
+                })
+                processed_rows.append({
+                    "year": data_set["year"],
+                    "population": population,
+                    "measure": "mean_age",
+                    "value": year_pop_stat["mean_age"],
                 })
     return pd.DataFrame(processed_rows)

@@ -53,7 +53,7 @@ class SinkPopulation(Population):
     def add_infectivity_boost(self, num_emergences: float):
         self.num_emergences += num_emergences
 
-    def update_proportion_infected(self, timestep: int, NdNc: float):
+    def update_proportion_infected(self, timestep: int, NdNc: float, n: float):
         # rk4 for diferential equation
         new_proportion_infected = self.proportion_infected + (
             self.r0_worm_to_sink * 
@@ -71,8 +71,8 @@ class SinkPopulation(Population):
     def get_proportion_infected(self):
         return self.proportion_infected
     
-    def age(self, timestep: int, NdNc: float):
-        self.update_proportion_infected(timestep, NdNc)
+    def age(self, timestep: int, NdNc: float, n: float):
+        self.update_proportion_infected(timestep, NdNc, n)
 
     def stats(self, verbose=False):        
         if(verbose):
@@ -95,11 +95,14 @@ class HostPopulation(Population):
 
     def __init__(
         self,
+        timestep: int,
         num_individuals: int,
         population_name: str,
         mortality_rate: float,
         initial_infected: int,
+        worms_to_infect_with: int,
         worm_death_rate: float,
+        worm_death_gamma_shape: float,
         worm_mating_probability: float,
         ke: float,
         sink_interaction_values: dict[str, dict[str, list[int]]],
@@ -108,20 +111,23 @@ class HostPopulation(Population):
     ):
         super().__init__(num_individuals, population_name, mortality_rate)
         self.worm_pop = Worms(
+            timestep=timestep,
             worm_death_rate=worm_death_rate,
             individuals=num_individuals,
             mating_probability=worm_mating_probability,
             worm_maturity_age_days=worm_maturity_age_days,
-            max_worm_age=max_worm_age
+            max_worm_age=max_worm_age,
+            worm_death_gamma_shape=worm_death_gamma_shape,
         )
         if (initial_infected > 0):
-            self.worm_pop.male_worms[:initial_infected, 0] = 1
-            self.worm_pop.female_worms[:initial_infected, 0] = 1
+            self.worm_pop.male_worms[:initial_infected, 0] = worms_to_infect_with
+            self.worm_pop.female_worms[:initial_infected, 0] = worms_to_infect_with
+
         self.ke = ke
         self.exposure_heterogeneity = np.random.gamma(
             shape=ke, scale=1 / ke, size=num_individuals
         )
-        self.ages = np.full(num_individuals, 0)
+        self.ages = np.random.randint(0, 901, size=num_individuals)#np.full(num_individuals, 0)
         self.sink_name_order = list(sink_interaction_values.keys())
         self.sink_interaction = np.array(
             [sink_interaction_values[key]["interaction"] for key in self.sink_name_order]
@@ -134,15 +140,15 @@ class HostPopulation(Population):
         )
         self.worm_pop.process_host_death(individuals)
 
-    def age(self, timestep: int):
+    def age(self, timestep: int, current_time: int, burnin_time: int):
         self.ages += timestep
 
-        to_die = np.random.rand(len(self.ages)) < (1 - np.exp(-(self.mortality_rate) * self.ages))
+        to_die = np.random.rand(len(self.ages)) < np.full(len(self.ages), (self.mortality_rate * timestep))#(1 - np.exp(-(self.mortality_rate) * self.ages))
+        self.worm_pop.age(timestep, current_time, burnin_time)
         self.process_death(to_die)
-        self.worm_pop.age(timestep)
 
-    def worms_emerging(self, interaction_occured: list[bool]) -> float:
-        return self.worm_pop.worms_emerging(interaction_occured)
+    def worms_emerging(self, interaction_occured: list[bool], teathering_efficacy: float) -> tuple[float, float]:
+        return self.worm_pop.worms_emerging(interaction_occured, teathering_efficacy)
 
     def stats(self, verbose=False) -> dict[str, int]:
         total_worm_burden = self.worm_pop.get_total_worms()
