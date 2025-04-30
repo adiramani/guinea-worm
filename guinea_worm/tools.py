@@ -73,4 +73,22 @@ def process_data(model_output):
                     "measure": "mean_age",
                     "value": year_pop_stat["mean_age"],
                 })
+                processed_rows.append({
+                    "year": data_set["year"],
+                    "population": population,
+                    "measure": "num_infected_host",
+                    "value": year_pop_stat["num_infected_host"],
+                })
+                processed_rows.append({
+                    "year": data_set["year"],
+                    "population": population,
+                    "measure": "emergences_per_infected_host_copepod",
+                    "value": year_pop_stat["emergences_per_infected_host_copepod"],
+                })
+                processed_rows.append({
+                    "year": data_set["year"],
+                    "population": population,
+                    "measure": "emergent_host_prevalence_copepod",
+                    "value": year_pop_stat["emergent_host_prevalence_copepod"],
+                })
     return pd.DataFrame(processed_rows)

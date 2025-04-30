@@ -53,12 +53,12 @@ class SinkPopulation(Population):
     def add_infectivity_boost(self, num_emergences: float):
         self.num_emergences += num_emergences
 
-    def update_proportion_infected(self, timestep: int, NdNc: float, n: float):
+    def update_proportion_infected(self, timestep: int, NhNc: float, n: float):
         # rk4 for diferential equation
         new_proportion_infected = self.proportion_infected + (
             self.r0_worm_to_sink * 
             (self.num_emergences / self.total_host_population) * 
-            NdNc *
+            NhNc *
             (1 - self.proportion_infected)
         ) - (
             self.mortality_rate * 
@@ -71,8 +71,8 @@ class SinkPopulation(Population):
     def get_proportion_infected(self):
         return self.proportion_infected
     
-    def age(self, timestep: int, NdNc: float, n: float):
-        self.update_proportion_infected(timestep, NdNc, n)
+    def age(self, timestep: int, NhNc: float, n: float):
+        self.update_proportion_infected(timestep, NhNc, n)
 
     def stats(self, verbose=False):        
         if(verbose):

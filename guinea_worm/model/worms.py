@@ -39,8 +39,11 @@ class Worms:
         cdf = stats.gamma.cdf(valid_worm_ages, a=worm_death_gamma_shape, scale=(1/(worm_death_gamma_shape*self.worm_death_rate)))
         hazards = pdf / (1 - cdf)
         prob_death_array = 1 - np.exp(-hazards * valid_worm_ages)
-        #prob_death_array[:worm_maturity_age_days] = 0
+        prob_death_array = 1 - np.exp(-hazards * timestep)
+
         self.death_prob_by_age = np.tile(prob_death_array, (individuals, 1))
+        self.death_prob_by_age[:, -1] = 1
+
         self.mating_probability = mating_probability
         self.emergences = np.zeros(individuals)
         self.total_female_worm_age_at_emergence = 0

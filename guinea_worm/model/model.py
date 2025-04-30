@@ -18,8 +18,8 @@ class Model:
     verbose: bool
     emergence_events: dict[str, dict[str, int]]
     burnin_time: int
-    NdNc: float
-    NcNd: float
+    NhNc: float
+    NcNh: float
 
     def __init__(
         self,
@@ -28,7 +28,7 @@ class Model:
         endtime: int,
         r0: float,
         r0_sink_to_worm: float,
-        NcNd: float,
+        NcNh: float,
         burnin_time_years: int,
         host_populations: dict[str, HostPopulation],
         sink_populations: dict[str, SinkPopulation],
@@ -40,8 +40,8 @@ class Model:
         self.endtime = endtime
         self.r0 = r0
         self.r0_sink_to_worm = r0_sink_to_worm
-        self.NcNd = NcNd
-        self.NdNc = 1 / NcNd
+        self.NcNh = NcNh
+        self.NhNc = 1 / NcNh
         self.burnin_time = burnin_time_years * self._days_in_year
         self.host_populations = host_populations
         self.sink_populations = sink_populations
@@ -87,7 +87,7 @@ class Model:
                             (n * host_population.worm_pop.worm_death_rate)
                         ) ** n
                     ) *
-                    self.NcNd * (self.get_seasonality_factor()) /
+                    self.NcNh * (self.get_seasonality_factor()) /
                     host_population.worm_pop.sex_ratio,
                     0.0
                 ) * self.timestep
@@ -143,7 +143,7 @@ class Model:
 
         for population_name in self.sink_populations:
             population = self.sink_populations[population_name]
-            population.age(timestep=self.timestep, NdNc=self.NdNc, n=37) # TODO: Fix hard coding of n, possible have it built into emerging worms
+            population.age(timestep=self.timestep, NhNc=self.NhNc, n=37) # TODO: Fix hard coding of n, possible have it built into emerging worms
 
         return_stats = {}
         print_summary = False
@@ -163,16 +163,20 @@ class Model:
         population_stats = {}
         for host_population_name in self.host_populations:
             host_population = self.host_populations[host_population_name]
+            num_infected_host = np.sum(host_population.worm_pop.get_total_worms() > 0)
             population_stats[host_population_name] = host_population.stats(verbose=print_summary)
             population_stats[host_population_name]["mean_worm_rate"] = np.mean(self._worm_rates)
             population_stats[host_population_name]["mating_prob"] = host_population.worm_pop.get_mating_probability()
             population_stats[host_population_name]["mean_age"] = np.mean(host_population.ages)
+            population_stats[host_population_name]["num_infected_host"] = num_infected_host
             self._worm_rates = []
 
             for sink_name, value in self.emergence_events[host_population_name].items():
                 population_stats[host_population_name][f"emergence_{sink_name}"] = value["worms"]
                 population_stats[host_population_name][f"emergence_hosts_{sink_name}"] = value["hosts"]
                 population_stats[host_population_name][f"emergences_per_host_{sink_name}"] = value["worms"] / host_population.num_individuals# if value["hosts"] != 0 else 0
+                population_stats[host_population_name][f"emergent_host_prevalence_{sink_name}"] = value["hosts"] / host_population.num_individuals
+                population_stats[host_population_name][f"emergences_per_infected_host_{sink_name}"] = value["worms"] / value["hosts"] if value["hosts"] != 0 else 0
                 population_stats[host_population_name][f"emergence_average_worm_age_{sink_name}"] = value["sum_worm_age"] / value["worms"] if value["worms"] > 0 else 0
                 self.emergence_events[host_population_name][sink_name]["worms"] = 0
                 self.emergence_events[host_population_name][sink_name]["hosts"] = 0
