@@ -1,4 +1,5 @@
 import pandas as pd
+from pathlib import Path
 
 def process_data(model_output):
     processed_rows = []
@@ -92,3 +93,17 @@ def process_data(model_output):
                     "value": year_pop_stat["emergent_host_prevalence_copepod"],
                 })
     return pd.DataFrame(processed_rows)
+
+def write_data(output_path, data, file_name):
+    path = Path(output_path)
+    path.mkdir(parents=True, exist_ok=True)
+
+    data.to_csv(output_path + file_name)
+
+def plot_measure(df, axis, measure, title=""):
+    if len(title) == 0:
+        title = measure
+    axis.plot(df.loc[df["measure"] == measure, "year"], df.loc[df["measure"] == measure, "mean_value"])
+    axis.fill_between(df.loc[df["measure"] == measure, "year"], df.loc[df["measure"] == measure, "2.5_percentile"],  df.loc[df["measure"] == measure, "97.5_percentile"], alpha=0.4)
+    axis.set_title(title)
+    axis.set_ylim(bottom=0)
