@@ -53,6 +53,12 @@ def process_data(model_output):
                 processed_rows.append({
                     "year": data_set["year"],
                     "population": population,
+                    "measure": "infectious_emergences_per_host_copepod",
+                    "value": year_pop_stat["infectious_emergences_per_host_copepod"],
+                })
+                processed_rows.append({
+                    "year": data_set["year"],
+                    "population": population,
                     "measure": "emergence_average_worm_age_copepod",
                     "value": year_pop_stat["emergence_average_worm_age_copepod"],
                 })
@@ -89,8 +95,32 @@ def process_data(model_output):
                 processed_rows.append({
                     "year": data_set["year"],
                     "population": population,
+                    "measure": "infectious_emergences_per_infected_host_copepod",
+                    "value": year_pop_stat["infectious_emergences_per_infected_host_copepod"],
+                })
+                processed_rows.append({
+                    "year": data_set["year"],
+                    "population": population,
                     "measure": "emergent_host_prevalence_copepod",
                     "value": year_pop_stat["emergent_host_prevalence_copepod"],
+                })
+                processed_rows.append({
+                    "year": data_set["year"],
+                    "population": population,
+                    "measure": "infectious_emergent_host_prevalence_copepod",
+                    "value": year_pop_stat["infectious_emergent_host_prevalence_copepod"],
+                })
+                processed_rows.append({
+                    "year": data_set["year"],
+                    "population": population,
+                    "measure": "emergent_host_cases_copepod",
+                    "value": year_pop_stat["emergent_host_cases_copepod"],
+                })
+                processed_rows.append({
+                    "year": data_set["year"],
+                    "population": population,
+                    "measure": "R0(t)",
+                    "value": year_pop_stat["R0(t)"]
                 })
     return pd.DataFrame(processed_rows)
 

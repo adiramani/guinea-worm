@@ -116,12 +116,16 @@ class Worms:
         self.mature_male_has_existed[:, 0] = False
 
         
-    def worms_emerging(self, interaction_occured: list[bool], teathering_efficacy: float) -> tuple[float, float, float]:
-        number_of_female_worms_emerging = 0
+    def worms_emerging(self, interaction_occured: list[bool], tethering_efficacy: float) -> tuple[float, float, list[float], float]:
+        number_of_infectious_female_worms_emerging = 0
+        number_of_tethered_female_worms_emerging = 0
         number_of_dogs_with_emerging_worms = 0
-        is_not_teathered = np.random.rand() >= teathering_efficacy
+        index_of_dogs_with_emerging_worms = []
+        index_of_dogs_with_infectious_emergence = []
+        num_individuals = self.female_worms.shape[0]
+        is_not_teathered = np.random.rand(num_individuals) >= np.full(num_individuals, tethering_efficacy)
         if (self.emergences[interaction_occured]).any():
-            number_of_female_worms_emerging = np.sum(
+            number_of_infectious_female_worms_emerging = np.sum(
                 self.emergences[
                     np.logical_and(
                         interaction_occured,
@@ -129,16 +133,40 @@ class Worms:
                     )
                 ]
             )
-            number_of_dogs_with_emerging_worms = np.sum(
+
+            number_of_tethered_female_worms_emerging = np.sum(
+                self.emergences[
+                    np.logical_and(
+                        interaction_occured,
+                        np.logical_not(is_not_teathered)
+                    )
+                ]
+            )
+
+            dogs_with_emerging_worms = (
+                self.emergences[
+                    interaction_occured
+                ] > 0
+            )
+
+            index_of_dogs_with_infectious_emergence = list(np.where(
                 self.emergences[
                     np.logical_and(
                         interaction_occured,
                         is_not_teathered
                     )
                 ] > 0
+            )[0])
+
+            index_of_dogs_with_emerging_worms = list(np.where(
+                dogs_with_emerging_worms
+            )[0])
+
+            number_of_dogs_with_emerging_worms = np.sum(
+                dogs_with_emerging_worms
             )
         total_age = self.total_female_worm_age_at_emergence
 
         self.emergences = np.zeros(len(self.emergences))
         self.total_female_worm_age_at_emergence = 0
-        return number_of_female_worms_emerging, number_of_dogs_with_emerging_worms, total_age
+        return number_of_infectious_female_worms_emerging, number_of_tethered_female_worms_emerging, number_of_dogs_with_emerging_worms, index_of_dogs_with_emerging_worms, index_of_dogs_with_infectious_emergence, total_age
